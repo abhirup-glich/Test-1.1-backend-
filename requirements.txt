@@ -3,9 +3,10 @@ flask-cors
 gunicorn
 opencv-python-headless
 numpy
-torch
+torch==2.9.1+cpu -f https://download.pytorch.org/whl/torch_stable.html
 facenet-pytorch
 dlib
 imutils
 psycopg2-binary
+
 tabulate
