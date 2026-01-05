@@ -1,0 +1,11 @@
+flask
+flask-cors
+gunicorn
+opencv-python-headless
+numpy
+torch
+facenet-pytorch
+dlib
+imutils
+psycopg2-binary
+tabulate
