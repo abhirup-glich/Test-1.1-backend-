@@ -6,10 +6,12 @@ opencv-python-headless
 imutils
 psycopg2-binary
 tabulate
+dlib
 
 torch==2.6.0
 torchvision==0.21.0+cpu
 facenet-pytorch
+
 
 
 
