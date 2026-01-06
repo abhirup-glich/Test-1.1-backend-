@@ -8,6 +8,7 @@ psycopg2-binary
 tabulate
 
 torch==2.5.1
-torchvision==0.20.1
+torchvision==0.21.0+cpu
 facenet-pytorch
+
 
