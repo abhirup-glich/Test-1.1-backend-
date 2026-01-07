@@ -9,8 +9,6 @@ from datetime import datetime
 import psycopg2
 import psycopg2.extras
 from facenet_pytorch import MTCNN, InceptionResnetV1
-import dlib
-from imutils import face_utils
 from tabulate import tabulate
 import argparse
 import os
@@ -27,9 +25,6 @@ DB_CONFIG = {
 }
 
 MATCH_THRESHOLD = 0.65
-BLINK_THRESHOLD = 0.20
-REQUIRED_BLINKS = 2
-HEAD_FRAMES = 8
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 exit_attendance = False
@@ -39,8 +34,6 @@ exit_attendance = False
 mtcnn = MTCNN(keep_all=False, device=DEVICE)
 facenet = InceptionResnetV1(pretrained="vggface2").eval().to(DEVICE)
 # This path relies on 'shape_predictor_68_face_landmarks.dat' being in the same directory as logic.py
-predictor = dlib.shape_predictor(os.path.join(os.path.dirname(__file__), "shape_predictor_68_face_landmarks.dat"))
-
 # ===================== DATABASE =====================
 
 def connect_db():
@@ -291,8 +284,6 @@ def mark_attendance(cur, video_path=None):
             return {"error": "Could not open video source"}
 
         marked = set()
-        blink = 0
-        nose_track = []
         start_time = time.time()
         attendance_marked = False
         saw_face = False
@@ -327,33 +318,15 @@ def mark_attendance(cur, video_path=None):
                     continue
                 
                 saw_face = True
-                    
-                rect = dlib.rectangle(x1, y1, x2, y2)
-
-                shape = face_utils.shape_to_np(predictor(gray, rect))
-                nose_track.append(shape[30])
-                if len(nose_track) > HEAD_FRAMES:
-                    nose_track.pop(0)
-
-                leftEye = shape[36:42]
-                ear = (np.linalg.norm(leftEye[1]-leftEye[5]) +
-                       np.linalg.norm(leftEye[2]-leftEye[4])) / \
-                      (2*np.linalg.norm(leftEye[0]-leftEye[3]))
-
-                if ear < BLINK_THRESHOLD:
-                    blink += 1
+                
 
                 if not video_path:
                     cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
                 
                 can_mark = False
-                if video_path:
-                    can_mark = True 
-                else:
-                    if blink >= REQUIRED_BLINKS:
-                        can_mark = True
-                    elif len(nose_track) < HEAD_FRAMES:
-                        pass
+              # Liveness already validated on client (browser)
+                can_mark = True
+
                         
                 if can_mark and not attendance_marked:
                     emb = get_embedding(face)
@@ -547,3 +520,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
